@@ -19,26 +19,6 @@
   body { background: var(--paper); color: var(--ink); font-family: 'DM Sans', sans-serif; min-height: 100vh; padding: 2rem 1rem 5rem; }
   .page { max-width: 760px; margin: 0 auto; }
 
-  /* Setup Banner */
-  .setup-banner {
-    background: #fff3cd; border-left: 4px solid #f0a500;
-    padding: 1rem 1.2rem; margin-bottom: 1.5rem; font-size: 0.85rem; line-height: 1.7;
-  }
-  .setup-banner strong { display: block; margin-bottom: 0.3rem; font-size: 0.9rem; }
-  .setup-banner code { background: #e8e0d4; padding: 0.1rem 0.4rem; font-size: 0.82rem; font-family: monospace; }
-  .setup-inputs { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.8rem; }
-  .setup-inputs input {
-    padding: 0.5rem 0.8rem; border: 1.5px solid #f0a500; font-family: 'DM Sans', sans-serif;
-    font-size: 0.85rem; outline: none; background: white;
-  }
-  .setup-inputs input:focus { border-color: var(--accent); }
-  .btn-save-config {
-    margin-top: 0.5rem; background: var(--ink); color: white; border: none;
-    padding: 0.5rem 1.2rem; font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
-    cursor: pointer; letter-spacing: 0.06em; text-transform: uppercase;
-  }
-  .config-saved { color: var(--accent2); font-weight: 600; display: none; margin-top: 0.4rem; font-size: 0.82rem; }
-
   /* Progress */
   .progress-wrap { position: sticky; top: 0; z-index: 100; background: var(--paper); padding: 0.6rem 0 0.8rem; border-bottom: 1px solid var(--line); margin-bottom: 2rem; }
   .progress-label { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; display: flex; justify-content: space-between; }
@@ -101,9 +81,6 @@
 <body>
 <div class="page">
 
-
-
-  <!-- Progress -->
   <div class="progress-wrap">
     <div class="progress-label">
       <span>Form Progress / फॉर्म प्रगति</span>
@@ -112,7 +89,6 @@
     <div class="progress-bar"><div class="progress-fill" id="fillBar"></div></div>
   </div>
 
-  <!-- Header -->
   <div class="header">
     <h1>Client Website Questionnaire</h1>
     <p class="sub">वेबसाइट प्रोजेक्ट प्रश्नावली</p>
@@ -121,38 +97,6 @@
 
   <form id="clientForm" onsubmit="handleSubmit(event)">
 
-
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-<script type="text/javascript">
-    // 1. Initialize with your Public Key
-    (function() {
-        emailjs.init("uGzFGA6yBXOgI2tbD");
-    })();
-
-    // 2. Handle the form submission
-    window.onload = function() {
-        // NOTE: Make sure your form tag in the HTML has id="contact-form"
-        const form = document.getElementById('contact-form');
-        
-        if (form) {
-            form.addEventListener('submit', function(event) {
-                event.preventDefault(); // Prevents the page from refreshing
-
-                // Send using your Service ID and Template ID
-                emailjs.sendForm('service_4wyr19i', 'template_s9vu869', this)
-                    .then(function() {
-                        alert('Message sent successfully!');
-                        event.target.reset(); // Clears the boxes after sending
-                    }, function(error) {
-                        alert('Failed to send message. Please try again.');
-                        console.log('FAILED...', error);
-                    });
-            });
-        }
-    }
-</script>
-    
-    <!-- CLIENT EMAIL -->
     <div class="section">
       <div class="section-header">
         <div class="sec-num">✉</div>
@@ -176,7 +120,6 @@
 
     <hr class="divider"/>
 
-    <!-- S1 -->
     <div class="section">
       <div class="section-header">
         <div class="sec-num">01</div>
@@ -207,7 +150,6 @@
 
     <hr class="divider"/>
 
-    <!-- S2 -->
     <div class="section">
       <div class="section-header">
         <div class="sec-num">02</div>
@@ -231,7 +173,6 @@
 
     <hr class="divider"/>
 
-    <!-- S3 -->
     <div class="section">
       <div class="section-header">
         <div class="sec-num">03</div>
@@ -269,7 +210,6 @@
 
     <hr class="divider"/>
 
-    <!-- S4 -->
     <div class="section">
       <div class="section-header">
         <div class="sec-num">04</div>
@@ -298,7 +238,6 @@
 
     <hr class="divider"/>
 
-    <!-- S5 -->
     <div class="section">
       <div class="section-header">
         <div class="sec-num">05</div>
@@ -336,7 +275,6 @@
 
     <hr class="divider"/>
 
-    <!-- S6 -->
     <div class="section">
       <div class="section-header">
         <div class="sec-num">06</div>
@@ -394,7 +332,7 @@
     </div>
 
     <div class="error-box" id="errorBox">
-      ⚠️ Couldn't send — EmailJS not configured yet. Please ask the developer to set it up, or share your answers manually.
+      ⚠️ Couldn't send — Please check your connection or try again.
     </div>
 
   </form>
@@ -402,42 +340,16 @@
 
 <script>
   // ── CONFIG ──────────────────────────────────────────
-  // Saved by developer via setup panel
   function getConfig() {
     return {
-      publicKey:  localStorage.getItem('ejs_public_key')  || '',
-      serviceId:  localStorage.getItem('ejs_service_id')  || '',
-      templateId: localStorage.getItem('ejs_template_id') || '',
-      yourEmail:  localStorage.getItem('ejs_your_email')  || ''
+      publicKey:  'uGzFGA6yBXOgI2tbD',
+      serviceId:  'service_4wyr19i',
+      templateId: 'template_s9vu869'
     };
   }
 
-  function saveConfig() {
-    const pk = document.getElementById('cfg_public_key').value.trim();
-    const si = document.getElementById('cfg_service_id').value.trim();
-    const ti = document.getElementById('cfg_template_id').value.trim();
-    const em = document.getElementById('cfg_your_email').value.trim();
-    if (!pk || !si || !ti || !em) { alert('Please fill all four fields.'); return; }
-    localStorage.setItem('ejs_public_key',  pk);
-    localStorage.setItem('ejs_service_id',  si);
-    localStorage.setItem('ejs_template_id', ti);
-    localStorage.setItem('ejs_your_email',  em);
-    emailjs.init(pk);
-    document.getElementById('configSaved').style.display = 'block';
-  }
-
-  // Init EmailJS if already configured
-  window.addEventListener('DOMContentLoaded', () => {
-    const cfg = getConfig();
-    if (cfg.publicKey) {
-      emailjs.init(cfg.publicKey);
-      // Pre-fill setup panel
-      document.getElementById('cfg_public_key').value  = cfg.publicKey;
-      document.getElementById('cfg_service_id').value  = cfg.serviceId;
-      document.getElementById('cfg_template_id').value = cfg.templateId;
-      document.getElementById('cfg_your_email').value  = cfg.yourEmail;
-    }
-  });
+  // Initialize EmailJS immediately
+  emailjs.init(getConfig().publicKey);
 
   // ── PROGRESS ─────────────────────────────────────────
   const TOTAL = 21; // fields to track
@@ -472,7 +384,6 @@
     const getRadio = name => { const el = form.querySelector('input[name="' + name + '"]:checked'); return el ? el.value : '—'; };
 
     return {
-      to_email:       getConfig().yourEmail,
       client_name:    get('client_name')    || '—',
       client_email:   get('client_email')   || '—',
       biz_name:       get('biz_name')       || '—',
@@ -510,14 +421,6 @@
     btn.textContent = '⏳ Sending...';
     sending.style.display = 'block';
     errorBox.style.display = 'none';
-
-    if (!cfg.publicKey || !cfg.serviceId || !cfg.templateId) {
-      sending.style.display = 'none';
-      errorBox.style.display = 'block';
-      btn.disabled = false;
-      btn.textContent = 'Submit Questionnaire →';
-      return;
-    }
 
     try {
       await emailjs.send(cfg.serviceId, cfg.templateId, collectAnswers());
