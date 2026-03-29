@@ -121,6 +121,23 @@
 
   <form id="clientForm" onsubmit="handleSubmit(event)">
 
+
+    <!-- Setup Banner -->
+  <div class="setup-banner" id="setupBanner">
+    <strong>⚙️ One-time setup for you (the developer) — clients won't see this after you configure it</strong>
+    Enter your <a href="https://www.emailjs.com" target="_blank">EmailJS</a> credentials below so submissions land in your Gmail inbox.
+    Sign up free → Add Gmail service → Create a template → paste IDs here.
+    <div class="setup-inputs">
+      <input type="text" id="cfg_public_key" placeholder="Public Key (from EmailJS Account → General)"/>
+      <input type="text" id="cfg_service_id" placeholder="Service ID (e.g. service_xxxxxx)"/>
+      <input type="text" id="cfg_template_id" placeholder="Template ID (e.g. template_xxxxxx)"/>
+      <input type="email" id="cfg_your_email" placeholder="Your email address (where you'll receive responses)"/>
+      <button class="btn-save-config" onclick="saveConfig()">Save & Activate →</button>
+      <span class="config-saved" id="configSaved">✓ Config saved! Submissions will now arrive in your inbox.</span>
+    </div>
+  </div>
+
+    
     <!-- CLIENT EMAIL -->
     <div class="section">
       <div class="section-header">
