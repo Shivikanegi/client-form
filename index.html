@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Client Website Questionnaire</title>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600&family=Noto+Sans+Devanagari:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --paper: #fdf8f2;
+    --accent: #c8793a;
+    --accent2: #4a7c6f;
+    --muted: #8a8070;
+    --line: #e8e0d4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--paper); color: var(--ink); font-family: 'DM Sans', sans-serif; min-height: 100vh; padding: 2rem 1rem 5rem; }
+  .page { max-width: 760px; margin: 0 auto; }
+
+  /* Setup Banner */
+  .setup-banner {
+    background: #fff3cd; border-left: 4px solid #f0a500;
+    padding: 1rem 1.2rem; margin-bottom: 1.5rem; font-size: 0.85rem; line-height: 1.7;
+  }
+  .setup-banner strong { display: block; margin-bottom: 0.3rem; font-size: 0.9rem; }
+  .setup-banner code { background: #e8e0d4; padding: 0.1rem 0.4rem; font-size: 0.82rem; font-family: monospace; }
+  .setup-inputs { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.8rem; }
+  .setup-inputs input {
+    padding: 0.5rem 0.8rem; border: 1.5px solid #f0a500; font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem; outline: none; background: white;
+  }
+  .setup-inputs input:focus { border-color: var(--accent); }
+  .btn-save-config {
+    margin-top: 0.5rem; background: var(--ink); color: white; border: none;
+    padding: 0.5rem 1.2rem; font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
+    cursor: pointer; letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .config-saved { color: var(--accent2); font-weight: 600; display: none; margin-top: 0.4rem; font-size: 0.82rem; }
+
+  /* Progress */
+  .progress-wrap { position: sticky; top: 0; z-index: 100; background: var(--paper); padding: 0.6rem 0 0.8rem; border-bottom: 1px solid var(--line); margin-bottom: 2rem; }
+  .progress-label { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; display: flex; justify-content: space-between; }
+  .progress-bar { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; transition: width 0.4s ease; }
+
+  /* Header */
+  .header { text-align: center; padding: 1.5rem 0 2rem; border-bottom: 2px solid var(--ink); margin-bottom: 2.5rem; }
+  .header::before { content: ''; display: block; width: 50px; height: 3px; background: var(--accent); margin: 0 auto 1rem; }
+  .header h1 { font-family: 'Playfair Display', serif; font-size: clamp(1.7rem, 5vw, 2.5rem); line-height: 1.2; }
+  .header .sub { font-family: 'Noto Sans Devanagari', sans-serif; font-size: 0.9rem; color: var(--muted); margin-top: 0.4rem; }
+  .header .badge { display: inline-block; margin-top: 0.9rem; padding: 0.25rem 0.8rem; background: var(--ink); color: var(--paper); font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; }
+
+  /* Section */
+  .section { margin-bottom: 2.8rem; }
+  .section-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.4rem; padding-bottom: 0.7rem; border-bottom: 1px solid var(--line); }
+  .sec-num { width: 30px; height: 30px; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; }
+  .sec-title h2 { font-family: 'Playfair Display', serif; font-size: 1.1rem; }
+  .sec-title span { font-family: 'Noto Sans Devanagari', sans-serif; font-size: 0.8rem; color: var(--muted); display: block; margin-top: 0.1rem; }
+
+  /* Questions */
+  .q-block { margin-bottom: 1.4rem; }
+  .q-label .en { font-size: 0.92rem; font-weight: 500; color: var(--ink); display: block; }
+  .q-label .hi { font-family: 'Noto Sans Devanagari', sans-serif; font-size: 0.82rem; color: var(--accent2); display: block; margin-top: 0.2rem; margin-bottom: 0.5rem; }
+
+  input[type="text"], input[type="email"], textarea, select {
+    width: 100%; background: white; border: 1.5px solid var(--line);
+    padding: 0.65rem 0.9rem; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--ink);
+    outline: none; transition: border-color 0.2s; resize: vertical;
+  }
+  input[type="text"]:focus, input[type="email"]:focus, textarea:focus, select:focus { border-color: var(--accent); }
+  textarea { min-height: 80px; }
+
+  .options-group { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.4rem; }
+  .opt-label { display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; border: 1.5px solid var(--line); background: white; cursor: pointer; font-size: 0.85rem; transition: all 0.15s; user-select: none; }
+  .opt-label input { display: none; }
+  .opt-label:hover { border-color: var(--accent); }
+  .opt-label.checked { background: var(--accent); border-color: var(--accent); color: white; }
+
+  /* Submit */
+  .submit-wrap { text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 2px solid var(--ink); }
+  .submit-wrap p { font-family: 'Noto Sans Devanagari', sans-serif; font-size: 0.85rem; color: var(--muted); margin-bottom: 1.2rem; }
+  .btn-submit { background: var(--ink); color: var(--paper); border: none; padding: 0.85rem 2.5rem; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600; letter-spacing: 0.08em; cursor: pointer; text-transform: uppercase; transition: background 0.2s; }
+  .btn-submit:hover:not(:disabled) { background: var(--accent); }
+  .btn-submit:disabled { background: var(--muted); cursor: default; }
+
+  .sending-msg { display: none; color: var(--muted); font-size: 0.85rem; margin-top: 0.8rem; }
+
+  /* Success */
+  .success-box { display: none; background: var(--ink); color: var(--paper); padding: 2rem; text-align: center; margin-top: 1.5rem; }
+  .success-box h3 { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin-bottom: 0.6rem; }
+  .success-box p { font-family: 'Noto Sans Devanagari', sans-serif; font-size: 0.88rem; color: #c8bfb0; line-height: 1.7; }
+
+  /* Error */
+  .error-box { display: none; background: #fff0f0; border-left: 4px solid #e05555; padding: 1rem 1.2rem; margin-top: 1rem; font-size: 0.85rem; color: #c0392b; }
+
+  .divider { border: none; border-top: 1px dashed var(--line); margin: 2rem 0; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Setup Banner -->
+  <div class="setup-banner" id="setupBanner">
+    <strong>⚙️ One-time setup for you (the developer) — clients won't see this after you configure it</strong>
+    Enter your <a href="https://www.emailjs.com" target="_blank">EmailJS</a> credentials below so submissions land in your Gmail inbox.
+    Sign up free → Add Gmail service → Create a template → paste IDs here.
+    <div class="setup-inputs">
+      <input type="text" id="cfg_public_key" placeholder="Public Key (from EmailJS Account → General)"/>
+      <input type="text" id="cfg_service_id" placeholder="Service ID (e.g. service_xxxxxx)"/>
+      <input type="text" id="cfg_template_id" placeholder="Template ID (e.g. template_xxxxxx)"/>
+      <input type="email" id="cfg_your_email" placeholder="Your email address (where you'll receive responses)"/>
+      <button class="btn-save-config" onclick="saveConfig()">Save & Activate →</button>
+      <span class="config-saved" id="configSaved">✓ Config saved! Submissions will now arrive in your inbox.</span>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span>Form Progress / फॉर्म प्रगति</span>
+      <span id="pct">0%</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="fillBar"></div></div>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <h1>Client Website Questionnaire</h1>
+    <p class="sub">वेबसाइट प्रोजेक्ट प्रश्नावली</p>
+    <span class="badge">Fill in English or Hindi · अंग्रेजी या हिंदी में भरें</span>
+  </div>
+
+  <form id="clientForm" onsubmit="handleSubmit(event)">
+
+    <!-- CLIENT EMAIL -->
+    <div class="section">
+      <div class="section-header">
+        <div class="sec-num">✉</div>
+        <div class="sec-title"><h2>Your Contact Info <span>आपकी संपर्क जानकारी</span></h2></div>
+      </div>
+      <div class="q-block">
+        <label class="q-label">
+          <span class="en">Your Name</span>
+          <span class="hi">आपका नाम</span>
+        </label>
+        <input type="text" name="client_name" placeholder="Full name / पूरा नाम" oninput="updateProgress()" required/>
+      </div>
+      <div class="q-block">
+        <label class="q-label">
+          <span class="en">Your Email Address</span>
+          <span class="hi">आपका ईमेल पता</span>
+        </label>
+        <input type="email" name="client_email" placeholder="you@example.com" oninput="updateProgress()" required/>
+      </div>
+    </div>
+
+    <hr class="divider"/>
+
+    <!-- S1 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="sec-num">01</div>
+        <div class="sec-title"><h2>About the Business <span>व्यवसाय के बारे में</span></h2></div>
+      </div>
+      <div class="q-block">
+        <label class="q-label"><span class="en">1. Business name?</span><span class="hi">व्यवसाय का नाम?</span></label>
+        <input type="text" name="biz_name" placeholder="e.g. Sharma Electronics" oninput="updateProgress()"/>
+      </div>
+      <div class="q-block">
+        <label class="q-label"><span class="en">2. What does your business do? Who are your customers?</span><span class="hi">व्यवसाय क्या करता है? ग्राहक कौन हैं?</span></label>
+        <textarea name="biz_desc" placeholder="Describe briefly..." oninput="updateProgress()"></textarea>
+      </div>
+      <div class="q-block">
+        <label class="q-label"><span class="en">3. Existing brand assets?</span><span class="hi">पहले से ब्रांड सामग्री?</span></label>
+        <div class="options-group">
+          <label class="opt-label"><input type="checkbox" name="brand" value="Logo" onchange="toggleCheck(this);updateProgress()"/> Logo</label>
+          <label class="opt-label"><input type="checkbox" name="brand" value="Brand Colors" onchange="toggleCheck(this);updateProgress()"/> Brand Colors / रंग</label>
+          <label class="opt-label"><input type="checkbox" name="brand" value="Fonts" onchange="toggleCheck(this);updateProgress()"/> Fonts / फ़ॉन्ट</label>
+          <label class="opt-label"><input type="checkbox" name="brand" value="None yet" onchange="toggleCheck(this);updateProgress()"/> None yet / अभी नहीं</label>
+        </div>
+      </div>
+      <div class="q-block">
+        <label class="q-label"><span class="en">4. What makes you different from competitors?</span><span class="hi">प्रतिस्पर्धियों से अलग क्यों हैं?</span></label>
+        <textarea name="usp" placeholder="Your unique strengths..." oninput="updateProgress()"></textarea>
+      </div>
+    </div>
+
+    <hr class="divider"/>
+
+    <!-- S2 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="sec-num">02</div>
+        <div class="sec-title"><h2>Goals & Purpose <span>लक्ष्य और उद्देश्य</span></h2></div>
+      </div>
+      <div class="q-block">
+        <label class="q-label"><span class="en">5. Main goal of the website?</span><span class="hi">वेबसाइट का मुख्य उद्देश्य?</span></label>
+        <div class="options-group">
+          <label class="opt-label"><input type="radio" name="goal" value="Sell Products" onchange="toggleRadio('goal',this);updateProgress()"/> Sell Products / उत्पाद बेचना</label>
+          <label class="opt-label"><input type="radio" name="goal" value="Get Leads" onchange="toggleRadio('goal',this);updateProgress()"/> Get Leads / लीड पाना</label>
+          <label class="opt-label"><input type="radio" name="goal" value="Share Info" onchange="toggleRadio('goal',this);updateProgress()"/> Share Info / जानकारी</label>
+          <label class="opt-label"><input type="radio" name="goal" value="Portfolio" onchange="toggleRadio('goal',this);updateProgress()"/> Portfolio</label>
+          <label class="opt-label"><input type="radio" name="goal" value="Other" onchange="toggleRadio('goal',this);updateProgress()"/> Other / अन्य</label>
+        </div>
+      </div>
+      <div class="q-block">
+        <label class="q-label"><span class="en">6. What should visitors do on your site?</span><span class="hi">विज़िटर साइट पर क्या करें?</span></label>
+        <input type="text" name="cta" placeholder="e.g. Call us, Book now, Buy..." oninput="updateProgress()"/>
+      </div>
+    </div>
+
+    <hr class="divider"/>
+
+    <!-- S3 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="sec-num">03</div>
+        <div class="sec-title"><h2>Pages & Content <span>पृष्ठ और सामग्री</span></h2></div>
+      </div>
+      <div class="q-block">
+        <label class="q-label"><span class="en">7. Which pages do you need?</span><span class="hi">कौन से पृष्ठ चाहिए?</span></label>
+        <div class="options-group">
+          <label class="opt-label"><input type="checkbox" name="pages" value="Home" onchange="toggleCheck(this);updateProgress()"/> Home / होम</label>
+          <label class="opt-label"><input type="checkbox" name="pages" value="About" onchange="toggleCheck(this);updateProgress()"/> About / परिचय</label>
+          <label class="opt-label"><input type="checkbox" name="pages" value="Services" onchange="toggleCheck(this);updateProgress()"/> Services / सेवाएँ</label>
+          <label class="opt-label"><input type="checkbox" name="pages" value="Contact" onchange="toggleCheck(this);updateProgress()"/> Contact / संपर्क</label>
+          <label class="opt-label"><input type="checkbox" name="pages" value="Blog" onchange="toggleCheck(this);updateProgress()"/> Blog / ब्लॉग</label>
+          <label class="opt-label"><input type="checkbox" name="pages" value="Gallery" onchange="toggleCheck(this);updateProgress()"/> Gallery / गैलरी</label>
+          <label class="opt-label"><input type="checkbox" name="pages" value="Shop" onchange="toggleCheck(this);updateProgress()"/> Shop / दुकान</label>
+        </div>
+      </div>
+      <div class="q-block">
+        <label class="q-label"><span class="en">8. Content ready? (text, images, videos)</span><span class="hi">सामग्री तैयार है?</span></label>
+        <div class="options-group">
+          <label class="opt-label"><input type="radio" name="content_ready" value="Yes, fully ready" onchange="toggleRadio('content_ready',this);updateProgress()"/> Yes / हाँ</label>
+          <label class="opt-label"><input type="radio" name="content_ready" value="Partially ready" onchange="toggleRadio('content_ready',this);updateProgress()"/> Partially / थोड़ा</label>
+          <label class="opt-label"><input type="radio" name="content_ready" value="No, need help" onchange="toggleRadio('content_ready',this);updateProgress()"/> No, need help / नहीं</label>
+        </div>
+      </div>
+      <div class="q-block">
+        <label class="q-label"><span class="en">9. Will you update the site yourself later?</span><span class="hi">बाद में साइट खुद अपडेट करेंगे?</span></label>
+        <div class="options-group">
+          <label class="opt-label"><input type="radio" name="self_update" value="Yes" onchange="toggleRadio('self_update',this);updateProgress()"/> Yes / हाँ</label>
+          <label class="opt-label"><input type="radio" name="self_update" value="No" onchange="toggleRadio('self_update',this);updateProgress()"/> No / नहीं</label>
+          <label class="opt-label"><input type="radio" name="self_update" value="Not sure" onchange="toggleRadio('self_update',this);updateProgress()"/> Not sure / पता नहीं</label>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider"/>
+
+    <!-- S4 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="sec-num">04</div>
+        <div class="sec-title"><h2>Design Preferences <span>डिज़ाइन प्राथमिकताएँ</span></h2></div>
+      </div>
+      <div class="q-block">
+        <label class="q-label"><span class="en">10. Share 2–3 websites you like and why</span><span class="hi">2–3 पसंदीदा वेबसाइट और क्यों</span></label>
+        <textarea name="inspiration" placeholder="Links + what you like about them..." oninput="updateProgress()"></textarea>
+      </div>
+      <div class="q-block">
+        <label class="q-label"><span class="en">11. Mood of the site?</span><span class="hi">साइट का माहौल कैसा हो?</span></label>
+        <div class="options-group">
+          <label class="opt-label"><input type="checkbox" name="mood" value="Professional" onchange="toggleCheck(this);updateProgress()"/> Professional / पेशेवर</label>
+          <label class="opt-label"><input type="checkbox" name="mood" value="Fun" onchange="toggleCheck(this);updateProgress()"/> Fun / मज़ेदार</label>
+          <label class="opt-label"><input type="checkbox" name="mood" value="Trustworthy" onchange="toggleCheck(this);updateProgress()"/> Trustworthy / भरोसेमंद</label>
+          <label class="opt-label"><input type="checkbox" name="mood" value="Modern" onchange="toggleCheck(this);updateProgress()"/> Modern / आधुनिक</label>
+          <label class="opt-label"><input type="checkbox" name="mood" value="Minimal" onchange="toggleCheck(this);updateProgress()"/> Minimal / सादा</label>
+          <label class="opt-label"><input type="checkbox" name="mood" value="Bold" onchange="toggleCheck(this);updateProgress()"/> Bold / बोल्ड</label>
+        </div>
+      </div>
+      <div class="q-block">
+        <label class="q-label"><span class="en">12. Colors or styles to AVOID?</span><span class="hi">क्या नहीं चाहिए?</span></label>
+        <input type="text" name="avoid" placeholder="e.g. No red, no flashy animations..." oninput="updateProgress()"/>
+      </div>
+    </div>
+
+    <hr class="divider"/>
+
+    <!-- S5 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="sec-num">05</div>
+        <div class="sec-title"><h2>Technical & Features <span>तकनीकी सुविधाएँ</span></h2></div>
+      </div>
+      <div class="q-block">
+        <label class="q-label"><span class="en">13. Features needed?</span><span class="hi">कौन सी सुविधाएँ चाहिए?</span></label>
+        <div class="options-group">
+          <label class="opt-label"><input type="checkbox" name="features" value="Contact Form" onchange="toggleCheck(this);updateProgress()"/> Contact Form</label>
+          <label class="opt-label"><input type="checkbox" name="features" value="Booking" onchange="toggleCheck(this);updateProgress()"/> Booking / बुकिंग</label>
+          <label class="opt-label"><input type="checkbox" name="features" value="E-commerce" onchange="toggleCheck(this);updateProgress()"/> E-commerce</label>
+          <label class="opt-label"><input type="checkbox" name="features" value="Map" onchange="toggleCheck(this);updateProgress()"/> Map / मैप</label>
+          <label class="opt-label"><input type="checkbox" name="features" value="Live Chat" onchange="toggleCheck(this);updateProgress()"/> Live Chat</label>
+          <label class="opt-label"><input type="checkbox" name="features" value="Social Feed" onchange="toggleCheck(this);updateProgress()"/> Social Feed</label>
+          <label class="opt-label"><input type="checkbox" name="features" value="None" onchange="toggleCheck(this);updateProgress()"/> None / कोई नहीं</label>
+        </div>
+      </div>
+      <div class="q-block">
+        <label class="q-label"><span class="en">14. Do you have domain & hosting?</span><span class="hi">डोमेन और होस्टिंग है?</span></label>
+        <div class="options-group">
+          <label class="opt-label"><input type="radio" name="domain" value="Yes, both" onchange="toggleRadio('domain',this);updateProgress()"/> Yes, both / दोनों</label>
+          <label class="opt-label"><input type="radio" name="domain" value="Domain only" onchange="toggleRadio('domain',this);updateProgress()"/> Domain only</label>
+          <label class="opt-label"><input type="radio" name="domain" value="Neither" onchange="toggleRadio('domain',this);updateProgress()"/> Neither / कोई नहीं</label>
+          <label class="opt-label"><input type="radio" name="domain" value="Need help" onchange="toggleRadio('domain',this);updateProgress()"/> Need help / मदद चाहिए</label>
+        </div>
+      </div>
+      <div class="q-block">
+        <label class="q-label"><span class="en">15. Multiple languages needed?</span><span class="hi">कई भाषाओं में साइट?</span></label>
+        <div class="options-group">
+          <label class="opt-label"><input type="radio" name="multilang" value="Yes" onchange="toggleRadio('multilang',this);updateProgress()"/> Yes / हाँ</label>
+          <label class="opt-label"><input type="radio" name="multilang" value="No" onchange="toggleRadio('multilang',this);updateProgress()"/> No / नहीं</label>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider"/>
+
+    <!-- S6 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="sec-num">06</div>
+        <div class="sec-title"><h2>Timeline & Budget <span>समयसीमा और बजट</span></h2></div>
+      </div>
+      <div class="q-block">
+        <label class="q-label"><span class="en">16. When do you need the website?</span><span class="hi">वेबसाइट कब तक चाहिए?</span></label>
+        <div class="options-group">
+          <label class="opt-label"><input type="radio" name="timeline" value="Within 1 week" onchange="toggleRadio('timeline',this);updateProgress()"/> Within 1 week</label>
+          <label class="opt-label"><input type="radio" name="timeline" value="2 weeks" onchange="toggleRadio('timeline',this);updateProgress()"/> 2 weeks</label>
+          <label class="opt-label"><input type="radio" name="timeline" value="1 month" onchange="toggleRadio('timeline',this);updateProgress()"/> 1 month / 1 महीना</label>
+          <label class="opt-label"><input type="radio" name="timeline" value="Flexible" onchange="toggleRadio('timeline',this);updateProgress()"/> Flexible / कोई जल्दी नहीं</label>
+        </div>
+      </div>
+      <div class="q-block">
+        <label class="q-label"><span class="en">17. Budget range?</span><span class="hi">बजट?</span></label>
+        <select name="budget" onchange="updateProgress()">
+          <option value="">— Select / चुनें —</option>
+          <option>Under ₹5,000</option>
+          <option>₹5,000 – ₹10,000</option>
+          <option>₹10,000 – ₹25,000</option>
+          <option>₹25,000 – ₹50,000</option>
+          <option>₹50,000+</option>
+          <option>Let's discuss / बात करें</option>
+        </select>
+      </div>
+      <div class="q-block">
+        <label class="q-label"><span class="en">18. How many revision rounds?</span><span class="hi">कितनी बार बदलाव?</span></label>
+        <div class="options-group">
+          <label class="opt-label"><input type="radio" name="revisions" value="1 round" onchange="toggleRadio('revisions',this);updateProgress()"/> 1 round</label>
+          <label class="opt-label"><input type="radio" name="revisions" value="2 rounds" onchange="toggleRadio('revisions',this);updateProgress()"/> 2 rounds</label>
+          <label class="opt-label"><input type="radio" name="revisions" value="3 rounds" onchange="toggleRadio('revisions',this);updateProgress()"/> 3 rounds</label>
+          <label class="opt-label"><input type="radio" name="revisions" value="Let's discuss" onchange="toggleRadio('revisions',this);updateProgress()"/> Let's discuss</label>
+        </div>
+      </div>
+      <div class="q-block">
+        <label class="q-label"><span class="en">19. Any other requirements or notes?</span><span class="hi">कोई और जरूरत?</span></label>
+        <textarea name="notes" placeholder="Anything else..." oninput="updateProgress()"></textarea>
+      </div>
+    </div>
+
+    <div class="submit-wrap">
+      <p>सब भरने के बाद सबमिट करें · Fill everything and submit</p>
+      <button type="submit" class="btn-submit" id="submitBtn">Submit Questionnaire →</button>
+      <div class="sending-msg" id="sendingMsg">⏳ Sending your responses... / भेजा जा रहा है...</div>
+    </div>
+
+    <div class="success-box" id="successBox">
+      <h3>🎉 Thank you!</h3>
+      <p>
+        आपकी जानकारी सफलतापूर्वक भेज दी गई है।<br/>
+        Your responses have been sent successfully!<br/><br/>
+        We'll review them and get back to you soon.
+      </p>
+    </div>
+
+    <div class="error-box" id="errorBox">
+      ⚠️ Couldn't send — EmailJS not configured yet. Please ask the developer to set it up, or share your answers manually.
+    </div>
+
+  </form>
+</div>
+
+<script>
+  // ── CONFIG ──────────────────────────────────────────
+  // Saved by developer via setup panel
+  function getConfig() {
+    return {
+      publicKey:  localStorage.getItem('ejs_public_key')  || '',
+      serviceId:  localStorage.getItem('ejs_service_id')  || '',
+      templateId: localStorage.getItem('ejs_template_id') || '',
+      yourEmail:  localStorage.getItem('ejs_your_email')  || ''
+    };
+  }
+
+  function saveConfig() {
+    const pk = document.getElementById('cfg_public_key').value.trim();
+    const si = document.getElementById('cfg_service_id').value.trim();
+    const ti = document.getElementById('cfg_template_id').value.trim();
+    const em = document.getElementById('cfg_your_email').value.trim();
+    if (!pk || !si || !ti || !em) { alert('Please fill all four fields.'); return; }
+    localStorage.setItem('ejs_public_key',  pk);
+    localStorage.setItem('ejs_service_id',  si);
+    localStorage.setItem('ejs_template_id', ti);
+    localStorage.setItem('ejs_your_email',  em);
+    emailjs.init(pk);
+    document.getElementById('configSaved').style.display = 'block';
+  }
+
+  // Init EmailJS if already configured
+  window.addEventListener('DOMContentLoaded', () => {
+    const cfg = getConfig();
+    if (cfg.publicKey) {
+      emailjs.init(cfg.publicKey);
+      // Pre-fill setup panel
+      document.getElementById('cfg_public_key').value  = cfg.publicKey;
+      document.getElementById('cfg_service_id').value  = cfg.serviceId;
+      document.getElementById('cfg_template_id').value = cfg.templateId;
+      document.getElementById('cfg_your_email').value  = cfg.yourEmail;
+    }
+  });
+
+  // ── PROGRESS ─────────────────────────────────────────
+  const TOTAL = 21; // fields to track
+  function updateProgress() {
+    let filled = 0;
+    const form = document.getElementById('clientForm');
+    form.querySelectorAll('input[type="text"], input[type="email"], textarea').forEach(el => { if (el.value.trim()) filled++; });
+    const sel = form.querySelector('select');
+    if (sel && sel.value) filled++;
+    const rg = {};
+    form.querySelectorAll('input[type="radio"]:checked').forEach(r => { rg[r.name] = true; });
+    filled += Object.keys(rg).length;
+    const cg = {};
+    form.querySelectorAll('input[type="checkbox"]:checked').forEach(c => { cg[c.name] = true; });
+    filled += Object.keys(cg).length;
+    const pct = Math.min(100, Math.round((filled / TOTAL) * 100));
+    document.getElementById('fillBar').style.width = pct + '%';
+    document.getElementById('pct').textContent = pct + '%';
+  }
+
+  function toggleCheck(el) { el.parentElement.classList.toggle('checked', el.checked); }
+  function toggleRadio(name, el) {
+    document.querySelectorAll('input[name="' + name + '"]').forEach(r => r.parentElement.classList.remove('checked'));
+    el.parentElement.classList.add('checked');
+  }
+
+  // ── COLLECT ANSWERS ───────────────────────────────────
+  function collectAnswers() {
+    const form = document.getElementById('clientForm');
+    const get = name => { const el = form.querySelector('[name="' + name + '"]'); return el ? el.value.trim() : ''; };
+    const getChecks = name => Array.from(form.querySelectorAll('input[name="' + name + '"]:checked')).map(c => c.value).join(', ') || '—';
+    const getRadio = name => { const el = form.querySelector('input[name="' + name + '"]:checked'); return el ? el.value : '—'; };
+
+    return {
+      to_email:       getConfig().yourEmail,
+      client_name:    get('client_name')    || '—',
+      client_email:   get('client_email')   || '—',
+      biz_name:       get('biz_name')       || '—',
+      biz_desc:       get('biz_desc')       || '—',
+      brand:          getChecks('brand'),
+      usp:            get('usp')            || '—',
+      goal:           getRadio('goal'),
+      cta:            get('cta')            || '—',
+      pages:          getChecks('pages'),
+      content_ready:  getRadio('content_ready'),
+      self_update:    getRadio('self_update'),
+      inspiration:    get('inspiration')    || '—',
+      mood:           getChecks('mood'),
+      avoid:          get('avoid')          || '—',
+      features:       getChecks('features'),
+      domain:         getRadio('domain'),
+      multilang:      getRadio('multilang'),
+      timeline:       getRadio('timeline'),
+      budget:         get('budget')         || '—',
+      revisions:      getRadio('revisions'),
+      notes:          get('notes')          || '—',
+    };
+  }
+
+  // ── SUBMIT ────────────────────────────────────────────
+  async function handleSubmit(e) {
+    e.preventDefault();
+    const cfg = getConfig();
+    const btn = document.getElementById('submitBtn');
+    const sending = document.getElementById('sendingMsg');
+    const successBox = document.getElementById('successBox');
+    const errorBox = document.getElementById('errorBox');
+
+    btn.disabled = true;
+    btn.textContent = '⏳ Sending...';
+    sending.style.display = 'block';
+    errorBox.style.display = 'none';
+
+    if (!cfg.publicKey || !cfg.serviceId || !cfg.templateId) {
+      sending.style.display = 'none';
+      errorBox.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Submit Questionnaire →';
+      return;
+    }
+
+    try {
+      await emailjs.send(cfg.serviceId, cfg.templateId, collectAnswers());
+      sending.style.display = 'none';
+      successBox.style.display = 'block';
+      btn.textContent = '✓ Submitted';
+      document.getElementById('fillBar').style.width = '100%';
+      document.getElementById('pct').textContent = '100%';
+      successBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } catch (err) {
+      sending.style.display = 'none';
+      errorBox.style.display = 'block';
+      errorBox.textContent = '⚠️ Failed to send: ' + (err.text || err.message || JSON.stringify(err)) + '. Check your EmailJS config.';
+      btn.disabled = false;
+      btn.textContent = 'Submit Questionnaire →';
+    }
+  }
+</script>
+</body>
+</html>
